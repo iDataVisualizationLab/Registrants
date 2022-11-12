@@ -12,7 +12,7 @@ import SpaceDust from "./Components/SpaceDust"
 // [{ lat: 19.6, lng: 80, altitude: 0.6 },{ lat: 50, lng: 60, altitude: 0.4 },{ lat: 31.3037101, lng: -89.29276214, altitude: 0.4 },{ lat: 33.5842591, lng: -101.8804709, altitude: 0.6 }]
 // const MAP_CENTERs = [{ lat: 87.5842591, lng: -70.8804709, altitude: 1.8 }];
 const MAP_CENTERs = [{ lat: 19.6, lng: 90, altitude: 0.8 },{ lat: 51.58421865, lng: 13.1910, altitude: 0.4 },{ lat: -22.9009, lng: -47.0573, altitude: 0.4 }, {lat: 38, lng: -88.29276214, altitude: 0.6 }
-,{ lat: 38, lng: -120.8804709, altitude: 0.8 },{lat: 38, lng: -88.29276214, altitude: 1.8 }];
+,{ lat: 38, lng: -120.8804709, altitude: 0.8 },{lat: 38, lng: -120.8804709, altitude: 1.8 }];
 // const MAP_CENTER = { lat: 33.5842591, lng: -101.8804709, altitude: 0.6 };
 const OPACITY = 0.3;
 const RING_PROPAGATION_SPEED = 1; // deg/sec
@@ -39,10 +39,12 @@ function App() {
             locationData.forEach(d=> {
                 if (d["Work Country"] ==="USA")
                     d["Work Country"] = "United States"
+                if (d["Work Country"] ==="Republic of Korea")
+                    d["Work Country"] = "South Korea"
                 if (d["Work City"] ==="KNOXVILLE")
                     d["Work City"] = "Knoxville"
                 if (d["Work City"] ==="St Andrews")
-                    d["Work City"] = "St. Andrews"
+                    d["Work City"] = "Saint Andrews"
                 if (d["Work City"] ==="Aalto")
                     d["Work City"] = "Espoo"
                 if (d["Work City"] ==="Wien")
@@ -70,22 +72,28 @@ function App() {
             })
             arcThickScale.domain(d3.extent(groupByLocation,d=>d3.sum(d[1],getValue)));//d3.max(d["Amount Ordered"],d["Amount Ordered"])
             // route
-            const byLocName = indexBy(geo, 'city_ascii', false);
-
+            const byLocName = {};
+            geo.forEach(d=>{
+                byLocName[d.city_ascii+', '+d["country"]] = d;
+            })
+            byLocName['Urbana, IL, United States'] = geo.find(d=>(d.city_ascii==='Urbana')&&(d.admin_name==='Illinois'))
+            // indexBy(geo, 'city_ascii', false);
+            const host = geo.find(d=>(d.city_ascii==='Portland')&&(d.admin_name==='Oregon'))
+            debugger
             const locs = groupByLocation.map(d=>{
-                return {...byLocName[d.city],"Location Name":d[0], count:d3.sum(d[1],getValue),values:d[1]}
+                return {...byLocName[d[0]],"Location Name":d[0], count:d3.sum(d[1],getValue),values:d[1]}
             })
             locs.sort((a,b)=>b.count-a.count)
-            locs.push({...byLocName["Portland"],"Location Name":"Portland, Oregon",count:d3.max(groupByLocation,d=>d3.sum(d[1],getValue)),color:"red"});
+            locs.push({...host,"Location Name":"Portland, Oregon",count:d3.max(groupByLocation,d=>d3.sum(d[1],getValue)),color:"red"});
 
             setLocs(locs);
             const filteredRoutes = groupByLocation
                 .map(d => ({
                     name: d[0],
                     srcIata: d[0],
-                    src: byLocName[d.city],
+                    src: byLocName[d[0]],
                     dstIata: "Portland, Oregon",
-                    dst: byLocName["Portland"],
+                    dst: host,
                     data: d[1],
                     count: Math.sqrt(arcThickScale(d3.sum(d[1],getValue)))
                 })); // domestic routes within country
@@ -130,7 +138,7 @@ function App() {
 
             // onArcHover={setHoverArc}
             arcsData={routes}
-            arcLabel={d => `${d.name}`}
+            arcLabel={d => ''}
             arcStartLat={d => +d.src.lat}
             arcStartLng={d => +d.src.lng}
             arcEndLat={d => +d.dst.lat}
@@ -222,6 +230,7 @@ function App() {
                 alignItems: "center",
                 fontSize: "60px",
                 color: "#fff",
+                visibility:"hidden"
             }}
                  onClick={()=>{setCurrentSequnce(0)}}
             >
