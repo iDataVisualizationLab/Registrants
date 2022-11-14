@@ -6,7 +6,7 @@ import * as d3 from 'd3'
 import indexBy from "index-array-by";
 import registrants from "./data/Registrants.csv"
 import geo from "./data/worldcities.csv"
-import ttulogo from "./ttu.png"
+import ttulogo from "./cat.jpeg"
 import SpaceDust from "./Components/SpaceDust"
 
 // [{ lat: 19.6, lng: 80, altitude: 0.6 },{ lat: 50, lng: 60, altitude: 0.4 },{ lat: 31.3037101, lng: -89.29276214, altitude: 0.4 },{ lat: 33.5842591, lng: -101.8804709, altitude: 0.6 }]
@@ -20,6 +20,11 @@ const RING_PROPAGATION_SPEED = 1; // deg/sec
 function getValue(d){
     return Math.max(d["Amount Ordered"],d["Discounts Applied"])
 }
+
+//function getCount(d){
+//    return 1;//Math.max(d["Amount Ordered"],d["Discounts Applied"])
+//}
+
 const arcThickScale = d3.scaleLinear().range([0.1,0.7]);
 function App() {
     const globeEl = useRef();
@@ -84,7 +89,7 @@ function App() {
                 return {...byLocName[d[0]],"Location Name":d[0], count:d3.sum(d[1],getValue),values:d[1]}
             })
             locs.sort((a,b)=>b.count-a.count)
-            locs.push({...host,"Location Name":"Portland, Oregon",count:d3.max(groupByLocation,d=>d3.sum(d[1],getValue)),color:"red"});
+            locs.push({...host,"Location Name":"Oregon",count:10,color:"red"});
 
             setLocs(locs);
             const filteredRoutes = groupByLocation
@@ -96,6 +101,7 @@ function App() {
                     dst: host,
                     data: d[1],
                     count: Math.sqrt(arcThickScale(d3.sum(d[1],getValue)))
+                  //  countAttendances: Math.sqrt(arcThickScale(d3.sum(d[1],getCount)))
                 })); // domestic routes within country
             console.log(filteredRoutes)
             debugger
@@ -180,22 +186,62 @@ function App() {
             htmlElementsData={logos}
             htmlLat={d => d.lat}
             htmlLng={d => d.lng}
-            // htmlElement={<img src={ttulogo} width={"50px"} alt="Logo" />}
-            htmlElement={<h1>We are here</h1>}
+             htmlElement={<img src={ttulogo} width={"500px"} alt="Logo" />}
+            //htmlElement={<h1>We are here</h1>}
             onGlobeClick={stopPlay}
             />
         </div>
+
+
         <div
             style={{
                 position: "absolute",
                 bottom: 0,
                 right: 0,
-                padding: "80px",
+                padding: "50px",
                 display: "flex",
                 alignItems: "center",
                 flexDirection: "column"
             }}
-        >
+        >   
+            <div style={{
+                display: "flex",
+                alignItems: "center",
+                fontSize: "26px",
+                color: "#fff",
+                visibility:"show"
+            }}
+                 onClick={()=>{setCurrentSequnce(0)}}
+            >
+            Map of UCC/BDCAT attendees 
+              <img src={ttulogo} width={"150px"} alt="Logo" />
+            </div>
+
+
+
+
+             <div style={{
+                display: "flex",
+                alignItems: "center",
+                fontSize: "20px",
+                color: "#fff",
+                visibility:"show"
+            }}
+            >
+                ------
+            </div>
+
+             <div style={{
+                display: "flex",
+                alignItems: "center",
+                fontSize: "20px",
+                color: "#fff",
+                visibility:"show"
+            }}
+            >
+             UCC/BDCAT attendees contributions ($) 
+            </div>
+
             <div style={{
                 display: "flex",
                 alignItems: "right",
@@ -219,24 +265,14 @@ function App() {
                 >
                     <div style={{width:'30%', textAlign:"right",padding:'2px',textOverflow: "ellipsis",whiteSpace: "nowrap",overflow: "hidden"}}>{d['Location Name']}</div>
                     <div style={{width:'70%',height:'100%',background:'black',position:'relative',borderRadius:'10px'}}>
-                        <div style={{width:`${(d.count/arcThickScale.domain()[1])*100}%`,height:'100%',background:(selectPoint&&(selectPoint===d))?'#dd6700':'orange',position:'absolute',borderRadius:'10px'}}>
+                        <div style={{width:`${(d.count/arcThickScale.domain()[1])*100}%`,height:'100%',background:(selectPoint&&(selectPoint===d))?'#dd6700':'orange',position:'absolute',borderRadius:'4px'}}>
                             <span>{d.count}</span>
                         </div>
                     </div>
                 </div>)}
             </div>
-            <div style={{
-                display: "flex",
-                alignItems: "center",
-                fontSize: "60px",
-                color: "#fff",
-                visibility:"hidden"
-            }}
-                 onClick={()=>{setCurrentSequnce(0)}}
-            >
-            Where are you from? <img src={ttulogo} width={"70px"} alt="Logo" />
-            </div>
-        </div>
+            
+        </div> 
     </div>;
 }
 
